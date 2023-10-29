@@ -1,18 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
-public abstract class BossObstacle : Obstacle
+public abstract class BossObstacle : DamagingObstacle
 {
-    [SerializeField] private int _damage;
+    protected Boss BossObject;
 
-    protected override void ImplementConsequences(ObstacleEntrySensor obstacleEntrySensor)
+    public event UnityAction BossKilled;
+
+    protected override void Awake()
     {
-        
+        BossObject = ObstacleObject as Boss;
     }
 
-    protected override void DisableObstacle()
+    protected override void Die()
     {
-
+        BossKilled?.Invoke();
     }
 }

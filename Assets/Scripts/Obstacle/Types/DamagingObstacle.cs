@@ -1,12 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 public abstract class DamagingObstacle : Obstacle
 {
-    protected float TotalDamage;
+    protected Enemy EnemyObject;
+
+    public float TotalDamage { get; protected set; }
+
+    public abstract void TakeDamage(float damage);
 
     protected virtual void Die() { }
+
+    protected virtual void Awake()
+    {
+        EnemyObject = ObstacleObject as Enemy;
+    }
+
+    protected virtual void OnEnable()
+    {
+        CircleUpParticle.gameObject.SetActive(true);
+    }
 
     protected virtual void StartCombat(ObstacleEntrySensor obstacleEntrySensor)
     {
@@ -14,14 +25,15 @@ public abstract class DamagingObstacle : Obstacle
         obstacleEntrySensor.OnDamagingObstacleEntered(TotalDamage);
     }
 
+    protected override void DisableObstacle()
+    {
+        base.DisableObstacle();
+        this.enabled = false;
+    }
+
     protected override void ImplementConsequences(ObstacleEntrySensor obstacleEntrySensor)
     {
         StartCombat(obstacleEntrySensor);
-    }
-
-    protected override void DisableObstacle()
-    {
-        this.enabled = false;
     }
 
     private void OnCounterattackStarted(float damage, ObstacleEntrySensor sensor)
@@ -30,6 +42,4 @@ public abstract class DamagingObstacle : Obstacle
         sensor.CounterattackStarted -= OnCounterattackStarted;
         DisableObstacle();
     }
-
-    protected abstract void TakeDamage(float damage);
 }

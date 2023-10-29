@@ -1,12 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 public abstract class Hero : MonoBehaviour
 {
-    [SerializeField] protected float Damage;
+    [SerializeField] private string _title;
     [SerializeField] private float _health;
+    [SerializeField] private float _meleeDamage;
     [SerializeField] private float _armor;
     [SerializeField] private float _combatInitiative;
     [SerializeField] private Animator _animator;
@@ -15,31 +14,36 @@ public abstract class Hero : MonoBehaviour
     private float _currentHealth;
 
     public event UnityAction<float, float> HealthChanged;
+    public event UnityAction<float> DamageChanged;
     public event UnityAction<float> ArmorChanged;
     public event UnityAction<Hero> Disabled;
+    public event UnityAction<Hero> Killed;
 
-    public float MeleeDamage { get; protected set; }
+    public string Title => _title;
+    public float MeleeDamage => _meleeDamage;
     public float CombatInitiative => _combatInitiative;
 
     private void Awake()
     {
         _currentHealth = _health;
-        HealthChanged?.Invoke(_currentHealth, _health);
     }
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
+        HealthChanged?.Invoke(_currentHealth, _health);
+        DamageChanged?.Invoke(MeleeDamage);
+        ArmorChanged?.Invoke(_armor);
         _animator.Play("Run");
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         TryDisableObjectOutOfCameraView();
     }
 
     public void TakeDamage(float damage)
     {
-        _currentHealth -= Mathf.Floor(damage * (1 - _armor / 100));
+        _currentHealth -= Mathf.Floor(damage * (100 - _armor) / 100);
 
         if (_currentHealth <= 0)
         {
@@ -49,6 +53,19 @@ public abstract class Hero : MonoBehaviour
         }
 
         HealthChanged?.Invoke(_currentHealth, _health);
+    }
+
+    public void TakeHealthChange(float healthChangeValue)
+    {
+        _currentHealth += healthChangeValue;
+        _health += healthChangeValue;
+        HealthChanged?.Invoke(_currentHealth, _health);
+    }
+
+    public void TakeDamageChange(float damageChangeValue)
+    {
+        _meleeDamage += damageChangeValue;
+        DamageChanged?.Invoke(_meleeDamage);
     }
 
     public void TakeArmorChange(float armorChangeValue)
@@ -72,6 +89,7 @@ public abstract class Hero : MonoBehaviour
         Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit);
         transform.SetParent(hit.transform);
         _animator.Play("Die");
+        Killed?.Invoke(this);
     }
 
     private void TryDisableObjectOutOfCameraView()

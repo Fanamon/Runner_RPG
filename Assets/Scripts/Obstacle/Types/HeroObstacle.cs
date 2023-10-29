@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,7 +8,7 @@ public class HeroObstacle : Obstacle
     private Hero _hero;
     private HeroesPool _heroesPool;
 
-    public event UnityAction<GameObject> ObstacleDestroyed;
+    public event UnityAction HeroJoined;
 
     static HeroObstacle()
     {
@@ -30,6 +28,7 @@ public class HeroObstacle : Obstacle
         _hero.transform.position = transform.position;
         _hero.transform.rotation = transform.rotation;
         _hero.gameObject.SetActive(true);
+        CircleUpParticle.gameObject.SetActive(true);
     }
 
     private void OnDisable()
@@ -50,15 +49,17 @@ public class HeroObstacle : Obstacle
         _heroesPool = heroesPool;
     }
 
-    protected override void ImplementConsequences(ObstacleEntrySensor obstacleEntrySensor)
-    {
-        obstacleEntrySensor.OnHeroObstacleEntered(_hero);
-        DisableObstacle();
-    }
-
     protected override void DisableObstacle()
     {
-        ObstacleDestroyed?.Invoke(gameObject);
-        Destroy(gameObject);
+        base.DisableObstacle();
+        gameObject.SetActive(false);
+    }
+
+    protected override void ImplementConsequences(ObstacleEntrySensor obstacleEntrySensor)
+    {
+        _hero.gameObject.SetActive(false);
+        obstacleEntrySensor.OnHeroObstacleEntered(_hero);
+        HeroJoined?.Invoke();
+        DisableObstacle();
     }
 }

@@ -1,39 +1,28 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(Animator))]
 public class Naga : MonoBehaviour
 {
-    [SerializeField] private float _healthModificator = 1;
-    [SerializeField] private float _damageModificator = 1;
-    [SerializeField] private float _armorModificator = 1;
-
-    private float _health;
-    private float _damage;
-    private float _armor;
-
     private float _currentHealth;
+    private Enemy _scriptableObject;
     private Animator _animator;
 
     public event UnityAction<float> HealthChanged;
-    public event UnityAction<float> DamageChanged;
-    public event UnityAction<float> ArmorChanged;
 
-    public void SetNagaParameters(float health, float damage, float armor)
+    public void SetNagaParameters(Enemy scriptableObject)
     {
-        _health = health * _healthModificator;
-        _damage = damage * _damageModificator;
-        _armor = armor * _armorModificator;
-        _currentHealth = _health;
+        _scriptableObject = scriptableObject;
+        _scriptableObject.MaxHealthChanged += OnMaxHealthChanged;
+        _currentHealth = _scriptableObject.UnitHealth;
         _animator = GetComponent<Animator>();
         HealthChanged?.Invoke(_currentHealth);
-        DamageChanged?.Invoke(_damage);
-        ArmorChanged?.Invoke(_armor);
     }
 
-    public float Damage => _damage;
+    private void OnDisable()
+    {
+        _scriptableObject.MaxHealthChanged -= OnMaxHealthChanged;
+    }
 
     public void RoundHealth()
     {
@@ -43,7 +32,7 @@ public class Naga : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        _currentHealth -= damage * (1 - _armor / 100);
+        _currentHealth -= damage * (1 - _scriptableObject.UnitArmor / 100);
 
         if (_currentHealth <= 0)
         {
@@ -53,6 +42,8 @@ public class Naga : MonoBehaviour
         {
             _animator.Play("Attack");
         }
+
+        HealthChanged?.Invoke(_currentHealth);
     }
 
     private void Die()
@@ -61,5 +52,11 @@ public class Naga : MonoBehaviour
         HealthChanged?.Invoke(_currentHealth);
         _animator.Play("Die");
         this.enabled = false;
+    }
+
+    private void OnMaxHealthChanged(float maxHealth)
+    {
+        _currentHealth = maxHealth;
+        HealthChanged?.Invoke(_currentHealth);
     }
 }

@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ObstaclePool : MonoBehaviour
@@ -10,10 +8,9 @@ public class ObstaclePool : MonoBehaviour
     [SerializeField] private GameObject[] _obstaclePrefabs;
 
     private CameraViewObserver _cameraViewObserver;
-    private FireballPool _fireballPool;
+    private CastingShootingObjectPool _fireballPool;
     private HeroesPool _heroesPool;
     private ObstacleChancesChangesObserver _obstacleChancesChangesObserver;
-    private Coroutine _heroReplacer;
     private Dictionary<GameObject, float> _obstaclesWithChances;
 
     private void Awake()
@@ -24,14 +21,6 @@ public class ObstaclePool : MonoBehaviour
     private void OnDisable()
     {
         _obstacleChancesChangesObserver.ObstacleChancesChanged -= OnObstacleChancesChanged;
-
-        foreach (var obstacleWithChances in _obstaclesWithChances)
-        {
-            if (obstacleWithChances.Key.TryGetComponent<HeroObstacle>(out var heroObstacle))
-            {
-                heroObstacle.ObstacleDestroyed -= OnObstacleDestroyed;
-            }
-        }
     }
 
     private void Update()
@@ -39,7 +28,7 @@ public class ObstaclePool : MonoBehaviour
         TryDisableObstaclesOutOfCameraView();
     }
 
-    public void SetAdditionalObjects(CameraViewObserver cameraViewObserver, FireballPool fireballPool,
+    public void SetAdditionalObjects(CameraViewObserver cameraViewObserver, CastingShootingObjectPool fireballPool,
         HeroesPool heroesPool, ObstacleChancesChangesObserver obstacleChancesChangesObserver)
     {
         _cameraViewObserver = cameraViewObserver;
@@ -50,14 +39,27 @@ public class ObstaclePool : MonoBehaviour
 
     public void SetRandomObstacle()
     {
-        if (HeroObstacle.IsAlreadyExist == false)
+        if (HeroObstacle.IsAlreadyExist == false && GhoulBoss.IsAlreadyExist == false)
         {
             EnableRandomObstacle(_obstaclesWithChances);
+        }
+        else if (HeroObstacle.IsAlreadyExist == false)
+        {
+            EnableRandomObstacle(_obstaclesWithChances.Where
+                (obstacleWithChance => obstacleWithChance.Key.TryGetComponent<GhoulBoss>(out var bossComponent) == false).
+                ToDictionary(obstacleWithChance => obstacleWithChance.Key, obstacleWithChance => obstacleWithChance.Value));
+        }
+        else if (GhoulBoss.IsAlreadyExist == false)
+        {
+            EnableRandomObstacle(_obstaclesWithChances.Where
+                (obstacleWithChance => obstacleWithChance.Key.TryGetComponent<HeroObstacle>(out var heroObstacleComponent) == false).
+                ToDictionary(obstacleWithChance => obstacleWithChance.Key, obstacleWithChance => obstacleWithChance.Value));
         }
         else
         {
             EnableRandomObstacle(_obstaclesWithChances.Where
-                (obstacleWithChance => obstacleWithChance.Key.TryGetComponent<HeroObstacle>(out var component) == false).
+                (obstacleWithChance => obstacleWithChance.Key.TryGetComponent<HeroObstacle>(out var heroObstacleComponent) == false 
+                && obstacleWithChance.Key.TryGetComponent<GhoulBoss>(out var bossComponent) == false).
                 ToDictionary(obstacleWithChance => obstacleWithChance.Key, obstacleWithChance => obstacleWithChance.Value));
         }
     }
@@ -91,12 +93,6 @@ public class ObstaclePool : MonoBehaviour
         {
             SetObstacleChances(obstacleChances);
         }
-    }
-
-    private void OnObstacleDestroyed(GameObject obstacle)
-    {
-        obstacle.GetComponent<HeroObstacle>().ObstacleDestroyed -= OnObstacleDestroyed;
-        _obstaclesWithChances.Remove(obstacle);
     }
 
     private void EnableObstacle(GameObject obstacle)
@@ -136,7 +132,6 @@ public class ObstaclePool : MonoBehaviour
             }
             else if (generatedObstacle.TryGetComponent<HeroObstacle>(out var heroObstacle))
             {
-                heroObstacle.ObstacleDestroyed += OnObstacleDestroyed;
                 heroObstacle.SetHeroesPool(_heroesPool);
             }
 

@@ -1,26 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class NagaGang : DamagingObstacle
 {
-    [SerializeField] private float _nagaStartHealth;
-    [SerializeField] private float _nagaStartDamage;
-    [SerializeField] private float _nagaStartArmor;
     [SerializeField] private Naga[] _nagas;
 
-    private void OnEnable()
+    public void InitializeNagas()
     {
-        ResetNagas();
+        EnemyObject.DamageChanged += OnDamageChanged;
+
+        foreach (var naga in _nagas)
+        {
+            naga.enabled = true;
+            naga.SetNagaParameters(EnemyObject);
+        }
     }
 
-    private void OnDisable()
-    {
-        _nagas.Where(naga => naga.enabled).ToList().ForEach(naga => naga.RoundHealth());
-    }
-
-    protected override void TakeDamage(float damage)
+    public override void TakeDamage(float damage)
     {
         float damagePoint = 1;
 
@@ -36,15 +32,15 @@ public class NagaGang : DamagingObstacle
         }
     }
 
-    private void ResetNagas()
+    private void OnDisable()
     {
-        TotalDamage = 0;
+        EnemyObject.DamageChanged -= OnDamageChanged;
 
-        foreach (var naga in _nagas)
-        {
-            naga.enabled = true;
-            naga.SetNagaParameters(_nagaStartHealth, _nagaStartDamage, _nagaStartArmor);
-            TotalDamage += naga.Damage;
-        }
+        _nagas.Where(naga => naga.enabled).ToList().ForEach(naga => naga.RoundHealth());
+    }
+
+    private void OnDamageChanged(float damage)
+    {
+        TotalDamage = damage * _nagas.Length;
     }
 }

@@ -4,5 +4,17 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Plugins/TypedScenes/Samples/SampleScene.unity
+    guid: 757f529704c73e34c9f1f490899cf713
+  - enabled: 1
+    path: Assets/Amazing Assets/Terrain To Mesh/Example Scenes/_2__Run_time__Export_Mesh_with_Edge_Fall_.unity
+    guid: 677adaee6bf5e6a4ea36e77699d4ce4e
+  - enabled: 1
+    path: Assets/Scenes/GameplayScene.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: d87fe1ced61499e47bc80df5596f73e5
   m_configObjects: {}

@@ -1,31 +1,37 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class Witch : DamagingObstacle
 {
-    [SerializeField] private float _health;
-    [SerializeField] private float _meleeDamage;
-    [SerializeField] private float _armor;
     [SerializeField] private Animator _animator;
     [SerializeField] private Transform _castPlacement;
 
     private float _currentHealth;
-    private float _spellCastSpeed;
+    private float _spellCastDelay;
     private Coroutine _spellCaster = null;
-    private FireballPool _fireballPool;
+    private CastingShootingObjectPool _fireballPool;
 
     public event UnityAction<float> HealthChanged;
 
-    private void OnEnable()
+    protected override void Awake()
     {
-        _currentHealth = _health;
-        TotalDamage = _meleeDamage;
-        HealthChanged?.Invoke(_currentHealth);
-        _spellCastSpeed = GetAnimatorClipLength("Idle");
+        base.Awake();
+        _spellCastDelay = GetAnimatorClipLength("Idle");
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        EnemyObject.MaxHealthChanged += OnMaxHealthChanged;
+        TotalDamage = EnemyObject.MeleeUnitDamage;
         _spellCaster = StartCoroutine(CastSpell(0.5f));
+    }
+
+    private void OnDisable()
+    {
+        EnemyObject.MaxHealthChanged -= OnMaxHealthChanged;
     }
 
     private void Update()
@@ -36,9 +42,32 @@ public class Witch : DamagingObstacle
         }
     }
 
-    public void SetFireballPool(FireballPool pool)
+    public void InitializeHealth()
+    {
+        _currentHealth = EnemyObject.UnitHealth;
+        HealthChanged?.Invoke(_currentHealth);
+    }
+
+    public void SetFireballPool(CastingShootingObjectPool pool)
     {
         _fireballPool = pool;
+    }
+
+    public override void TakeDamage(float damage)
+    {
+        StopCoroutine(_spellCaster);
+        _currentHealth -= Mathf.Floor(damage * (1 - EnemyObject.UnitArmor / 100));
+
+        if (_currentHealth <= 0)
+        {
+            Die();
+        }
+        else
+        {
+            _animator.Play("Attack");
+        }
+
+        HealthChanged?.Invoke(_currentHealth);
     }
 
     protected override void Die()
@@ -54,23 +83,6 @@ public class Witch : DamagingObstacle
         HealthChanged?.Invoke(_currentHealth);
     }
 
-    protected override void TakeDamage(float damage)
-    {
-        StopCoroutine(_spellCaster);
-        _currentHealth -= Mathf.Floor(damage * (1 - _armor / 100));
-
-        if (_currentHealth <= 0)
-        {
-            Die();
-        }
-        else
-        {
-            _animator.Play("Attack");
-        }
-
-        HealthChanged?.Invoke(_currentHealth);
-    }
-
     private float GetAnimatorClipLength(string clipName)
     {
         AnimationClip[] clips = _animator.runtimeAnimatorController.animationClips;
@@ -80,12 +92,18 @@ public class Witch : DamagingObstacle
 
     private IEnumerator CastSpell(float speedModificator = 1)
     {
-        yield return new WaitForSeconds(_spellCastSpeed * speedModificator);
+        yield return new WaitForSeconds(_spellCastDelay * speedModificator);
 
-        Fireball fireball = _fireballPool.GetFireball();
+        CastingShootingObject fireball = _fireballPool.GetObjectToCastOrShoot();
         fireball.transform.position = _castPlacement.transform.position;
         fireball.gameObject.SetActive(true);
 
         _spellCaster = null;
+    }
+
+    private void OnMaxHealthChanged(float maxHealth)
+    {
+        _currentHealth = maxHealth;
+        HealthChanged?.Invoke(_currentHealth);
     }
 }

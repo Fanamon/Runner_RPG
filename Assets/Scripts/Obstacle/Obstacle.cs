@@ -1,22 +1,28 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public abstract class Obstacle : MonoBehaviour
 {
-    [SerializeField] private string _title;
+    [SerializeField] protected ObstacleObject ObstacleObject;
+    [SerializeField] protected ParticleSystem CircleUpParticle;
 
-    public string Title => _title;
+    public event UnityAction ObstacleGathered;
+
+    public string Title => ObstacleObject.Title;
 
     protected void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out ObstacleEntrySensor obstacleEntrySensor))
+        if (other.TryGetComponent(out ObstacleEntrySensor obstacleEntrySensor)  && enabled)
         {
             ImplementConsequences(obstacleEntrySensor);
+            ObstacleGathered?.Invoke();
         }
     }
 
-    protected abstract void ImplementConsequences(ObstacleEntrySensor obstacleEntrySensor);
+    protected virtual void DisableObstacle()
+    {
+        CircleUpParticle.gameObject.SetActive(false);
+    }
 
-    protected abstract void DisableObstacle();
+    protected abstract void ImplementConsequences(ObstacleEntrySensor obstacleEntrySensor);
 }

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,7 +6,7 @@ public class PlatformPool : MonoBehaviour
 {
     [Header("Additional Objects")]
     [SerializeField] protected CameraViewObserver CameraViewObserver;
-    [SerializeField] private FireballPool _fireballPool;
+    [SerializeField] private CastingShootingObjectPool _fireballPool;
     [SerializeField] private HeroesPool _heroesPool;
     [SerializeField] private ObstacleChancesChangesObserver _obstacleChancesChangesObserver;
 
@@ -23,21 +22,30 @@ public class PlatformPool : MonoBehaviour
 
     protected float PlatformLength;
     protected float PlatformHeight;
-
     protected Vector3 CurrentPlatformPosition;
     protected Vector3 StepPlatformPosition;
     protected Queue<GameObject> Platforms = new Queue<GameObject>();
+
+    private float _oneObstacleActiveValue;
+    private float _twoObstaclesActiveValue;
+    private float _noneObstaclesActiveValue;
 
     public void Initialize()
     {
         float currentObstaclePositionZ = _startObstaclePositionZ;
 
+        _obstacleChancesChangesObserver.ObstacleActiveValuesChanged += OnObstacleActiveValuesChanged;
         CurrentPlatformPosition = transform.position;
 
         for (int i = 0; i < _platformsCount; i++)
         {
             CreatePlatform(ref currentObstaclePositionZ);
         }
+    }
+
+    private void OnDisable()
+    {
+        _obstacleChancesChangesObserver.ObstacleActiveValuesChanged -= OnObstacleActiveValuesChanged;
     }
 
     public void InitializeRandomPlatformsObstaclePlacementActivity()
@@ -50,6 +58,20 @@ public class PlatformPool : MonoBehaviour
         {
             Platforms.ToList()[i].GetComponent<ObstaclePlacements>().RandomizeObstaclesActivity();
         }
+    }
+
+    private void OnObstacleActiveValuesChanged(float oneObstacleActiveValue, float twoObstaclesActiveValue,
+        float noneObstaclesActiveValue)
+    {
+        _oneObstacleActiveValue = oneObstacleActiveValue;
+        _twoObstaclesActiveValue = twoObstaclesActiveValue;
+        _noneObstaclesActiveValue = noneObstaclesActiveValue;
+
+        Platforms.ToList().ForEach(platform =>
+        {
+            platform.GetComponent<ObstaclePlacements>().SetObstacleActiveValues(_oneObstacleActiveValue,
+            _twoObstaclesActiveValue, _noneObstaclesActiveValue);
+        });
     }
 
     private void CreatePlatform(ref float currentObstaclePositionZ)

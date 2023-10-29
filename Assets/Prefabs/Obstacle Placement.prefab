@@ -46,7 +46,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _container: {fileID: 4378479275710075376}
   _obstaclePrefabs:
-  - {fileID: 2894713716545439826, guid: 533b12b92c4596e4592ef266f22c61da, type: 3}
+  - {fileID: 739761048970113272, guid: ca22c14d74f6fa94d96d40fa98187254, type: 3}
   - {fileID: 7728358942842063239, guid: b398e57e9d390fa45b3270c572bfff52, type: 3}
   - {fileID: 6789031195213547624, guid: 21e2d1e8ea1db7f428f30f7d3ebd3526, type: 3}
   - {fileID: 4022071391511285964, guid: 0d137ad5724f1b2418aad1a71cdfe0fb, type: 3}
+  - {fileID: 3838385564572509142, guid: d7140551e3f46a14fba01e8f562870bf, type: 3}
+  - {fileID: 6902053321331112245, guid: 826c5e74e78943f41a074b05455829a9, type: 3}
+  - {fileID: 5659420399571100113, guid: a2cbe9f57c0e6d84ab5dc5e63d6239f6, type: 3}

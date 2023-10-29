@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,16 +6,27 @@ public class ObstaclePlacements : MonoBehaviour
 {
     [SerializeField] private GameObject _obstaclePlacementPrefab;
 
-    private float _oneObstacleActiveValue = 0.5f;
-    private float _twoObstaclesActiveValue = 0.9f;
+    private float _oneObstacleActiveValue;
+    private float _twoObstaclesActiveValue;
+    private float _noneObstaclesActiveValue;
 
     private List<GameObject[]> _obstacles = new List<GameObject[]>();
 
+    public void SetObstacleActiveValues(float oneObstacleActiveValue, float twoObstaclesActiveValue, 
+        float noneObstaclesActiveValue)
+    {
+        _oneObstacleActiveValue = oneObstacleActiveValue;
+        _twoObstaclesActiveValue = twoObstaclesActiveValue;
+        _noneObstaclesActiveValue = noneObstaclesActiveValue;
+    }
+
     public void RandomizeObstaclesActivity(int lineIndex = 0)
     {
+        float obstacleActiveValuesSum = _oneObstacleActiveValue + _twoObstaclesActiveValue + _noneObstaclesActiveValue;
+
         for (int i = lineIndex; i < _obstacles.Count; i++)
         {
-            float obstacleActiveValue = Random.value;
+            float obstacleActiveValue = Random.Range(0, obstacleActiveValuesSum);
 
             if (obstacleActiveValue < _oneObstacleActiveValue)
             {
@@ -25,7 +35,7 @@ public class ObstaclePlacements : MonoBehaviour
                 _obstacles[i][obstaclePlacementPositionIndex].GetComponent<ObstaclePool>()
                     .SetRandomObstacle();
             }
-            else if (obstacleActiveValue < _twoObstaclesActiveValue)
+            else if (obstacleActiveValue < _oneObstacleActiveValue + _twoObstaclesActiveValue)
             {
                 int obstacleUnplacementPositionIndex = Random.Range(0, _obstacles[i].Length);
 
@@ -40,7 +50,7 @@ public class ObstaclePlacements : MonoBehaviour
 
     public void GenerateObstaclePlacements(ref float currentObstaclePositionZ, float stepPositionZ, 
         float[] obstaclePlacementPositionsX, CameraViewObserver cameraViewObserver,
-        FireballPool fireballPool, HeroesPool heroesPool, ObstacleChancesChangesObserver obstacleChancesChangesObserver)
+        CastingShootingObjectPool fireballPool, HeroesPool heroesPool, ObstacleChancesChangesObserver obstacleChancesChangesObserver)
     {
         GameObject obstacles = new GameObject("Obstacles");
 
@@ -56,7 +66,7 @@ public class ObstaclePlacements : MonoBehaviour
     }
 
     private GameObject[] CreateLineOfObstacles(float currentObstaclePositionZ, GameObject objectObstacles, 
-        float[] obstaclePositionsX, CameraViewObserver cameraViewObserver, FireballPool fireballPool,
+        float[] obstaclePositionsX, CameraViewObserver cameraViewObserver, CastingShootingObjectPool fireballPool,
         HeroesPool heroesPool, ObstacleChancesChangesObserver obstacleChancesChangesObserver)
     {
         GameObject obstacleLine = new GameObject("Obstacle Line");
@@ -76,7 +86,7 @@ public class ObstaclePlacements : MonoBehaviour
     }
 
     private GameObject CreateObstaclePlacement(float obstaclePositionsX, GameObject obstacleLine, 
-        CameraViewObserver cameraViewObserver, FireballPool fireballPool, HeroesPool heroesPool,
+        CameraViewObserver cameraViewObserver, CastingShootingObjectPool fireballPool, HeroesPool heroesPool,
         ObstacleChancesChangesObserver obstacleChancesChangesObserver)
     {
         GameObject obstaclePlacement = Instantiate(_obstaclePlacementPrefab, obstacleLine.transform);

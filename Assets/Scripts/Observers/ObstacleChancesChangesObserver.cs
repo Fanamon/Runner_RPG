@@ -1,39 +1,34 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class ObstacleChancesChangesObserver : MonoBehaviour
 {
-    [SerializeField] private ObstacleChanceInfo[] _obstacleChances;
+    [SerializeField] private ObstaclesStateMachine _stateMachine;
 
+    public event UnityAction<float, float, float> ObstacleActiveValuesChanged;
     public event UnityAction<Dictionary<string, float>> ObstacleChancesChanged;
 
-    public void Activate()
+    public void Initialize()
     {
-        OnStateChanged();
+        _stateMachine.ObstacleActiveValueChanged += OnObstacleActiveValueChanged;
+        _stateMachine.StateChanged += OnStateChanged;
     }
 
-    private void OnStateChanged()
+    private void OnDisable()
     {
-        Dictionary<string, float> obstacleChances = new Dictionary<string, float>();
+        _stateMachine.ObstacleActiveValueChanged -= OnObstacleActiveValueChanged;
+        _stateMachine.StateChanged -= OnStateChanged;
+    }
 
-        foreach (var obstacleChance in _obstacleChances)
-        {
-            obstacleChances.Add(obstacleChance.Name, obstacleChance.Chance);
-        }
+    private void OnObstacleActiveValueChanged(float oneObstacleActiveValue, float twoObstacleActiveValue,
+        float noneObstaclesActiveValue)
+    {
+        ObstacleActiveValuesChanged?.Invoke(oneObstacleActiveValue, twoObstacleActiveValue, noneObstaclesActiveValue);
+    }
 
+    private void OnStateChanged(Dictionary<string, float> obstacleChances)
+    {
         ObstacleChancesChanged?.Invoke(obstacleChances);
     }
-}
-
-[Serializable]
-public class ObstacleChanceInfo
-{
-    [SerializeField] private string _name;
-    [SerializeField] private float _chance;
-
-    public string Name => _name;
-    public float Chance => _chance;
 }

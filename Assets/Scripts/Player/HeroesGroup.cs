@@ -1,15 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using Attributes;
+using System.Collections;
 
 public class HeroesGroup : MonoBehaviour
 {
     [SerializeField] private CameraViewObserver _cameraViewObserver;
     [SerializeField] private HeroesPool _heroesPool;
-
-    private int _startHeroNumber = 0;
+    [SerializeField] private FailureView _failureView;
+    [SerializeField] private StartHeroConfig _startHeroConfig;
 
     private Hero[] _heroes;
     private ObstacleEntrySensor[] _sensors;
@@ -26,15 +26,17 @@ public class HeroesGroup : MonoBehaviour
         {
             hero.SetCameraViewObserver(_cameraViewObserver);
             hero.Disabled += OnHeroDisabled;
+            hero.Killed += OnHeroKilled;
         }
 
         foreach (var sensor in _sensors)
         {
             sensor.HeroesGroupCombatStarted += OnHeroesGroupCombatStarted;
             sensor.HeroInvited += OnHeroInvited;
+            sensor.HeroesGroupBuffInvoked += OnHeroesGroupBuffInvoked;
         }
 
-        HeroJoined?.Invoke(GetComponentsInChildren<Hero>(true)[_startHeroNumber]);
+        HeroJoined?.Invoke(GetComponentsInChildren<Hero>(true)[_startHeroConfig.StartHeroNumber]);
     }
 
     private void OnDisable()
@@ -42,12 +44,14 @@ public class HeroesGroup : MonoBehaviour
         foreach (var hero in _heroes)
         {
             hero.Disabled -= OnHeroDisabled;
+            hero.Killed -= OnHeroKilled;
         }
 
         foreach (var sensor in _sensors)
         {
             sensor.HeroesGroupCombatStarted -= OnHeroesGroupCombatStarted;
             sensor.HeroInvited -= OnHeroInvited;
+            sensor.HeroesGroupBuffInvoked -= OnHeroesGroupBuffInvoked;
         }
     }
 
@@ -55,6 +59,18 @@ public class HeroesGroup : MonoBehaviour
     {
         hero.Reset();
         HeroKilled?.Invoke(hero);
+    }
+
+    private void OnHeroKilled(Hero killedHero)
+    {
+        Hero[] availableHeroes = _heroes.Where(hero => hero.enabled == true && hero.gameObject.activeSelf == true 
+        && hero != killedHero)
+            .OrderByDescending(hero => hero.CombatInitiative).ToArray();
+
+        if (availableHeroes.Length == 0)
+        {
+            StartCoroutine(EnableFailureView());
+        }
     }
 
     private void OnHeroInvited(Hero hero)
@@ -65,7 +81,7 @@ public class HeroesGroup : MonoBehaviour
     private void OnHeroesGroupCombatStarted(float damage)
     {
         Hero takingDamageHero = null;
-        Hero[] availableHeroes = _heroes.Where(hero => hero.gameObject.activeSelf == true)
+        Hero[] availableHeroes = _heroes.Where(hero => hero.enabled == true && hero.gameObject.activeSelf == true)
             .OrderByDescending(hero => hero.CombatInitiative).ToArray();
 
         float combatInitiativeIteratedSum = 0;
@@ -86,6 +102,27 @@ public class HeroesGroup : MonoBehaviour
         Counterattack(availableHeroes);
     }
 
+    private void OnHeroesGroupBuffInvoked(float buffValue, int attributeNumber)
+    {
+        foreach (var hero in _heroes)
+        {
+            switch (attributeNumber)
+            {
+                case (int)Attribute.Health:
+                    hero.TakeHealthChange(buffValue);
+                    break;
+
+                case (int)Attribute.Damage:
+                    hero.TakeDamageChange(buffValue);
+                    break;
+
+                case (int)Attribute.Armor:
+                    hero.TakeArmorChange(buffValue);
+                    break;
+            }
+        }
+    }
+
     private void Counterattack(Hero[] heroes)
     {
         float damage = GetTotalHeroesDamage(heroes);
@@ -94,6 +131,16 @@ public class HeroesGroup : MonoBehaviour
         {
             sensor.OnCounterattacked(damage);
         }
+    }
+
+    private IEnumerator EnableFailureView()
+    {
+        float delay = 3;
+
+        yield return new WaitForSeconds(delay);
+
+        Time.timeScale = 0;
+        _failureView.gameObject.SetActive(true);
     }
 
     private float GetCombatInitiativeRandomValue(Hero[] heroes)
@@ -110,6 +157,7 @@ public class HeroesGroup : MonoBehaviour
 
     private float GetTotalHeroesDamage(Hero[] heroes)
     {
-        return heroes.Where(hero => hero.gameObject.activeSelf == true).Select(hero => hero.MeleeDamage).Sum();
+        return heroes.Where(hero => hero.gameObject.activeSelf == true && hero.enabled == true)
+            .Select(hero => hero.MeleeDamage).Sum();
     }
 }

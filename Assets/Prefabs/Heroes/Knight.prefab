@@ -98,8 +98,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2c00ef3e5c20aa44a533a865681fcc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Damage: 4
+  _title: Knight
   _health: 15
+  _meleeDamage: 4
   _armor: 28
   _combatInitiative: 0.84
   _animator: {fileID: 4469153899166351558}

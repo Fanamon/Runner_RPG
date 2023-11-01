@@ -32,7 +32,7 @@ public class GhoulBoss : BossObstacle
         }
         else
         {
-            _animator.Play("Attack");
+            _animator.SetTrigger(AnimatorData.ObstacleParameters.Attack);
         }
     }
 
@@ -45,7 +45,7 @@ public class GhoulBoss : BossObstacle
     protected override void Die()
     {
         BossObject.TakeDamage(BossObject.UnitHealth);
-        _animator.Play("Die");
+        _animator.SetTrigger(AnimatorData.ObstacleParameters.Die);
         base.Die();
         DisableObstacle();
     }

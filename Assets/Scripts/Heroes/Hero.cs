@@ -33,7 +33,7 @@ public abstract class Hero : MonoBehaviour
         HealthChanged?.Invoke(_currentHealth, _health);
         DamageChanged?.Invoke(MeleeDamage);
         ArmorChanged?.Invoke(_armor);
-        _animator.Play("Run");
+        _animator.SetTrigger(AnimatorData.PlayerAnimatorParameters.Run);
     }
 
     protected virtual void Update()
@@ -88,7 +88,7 @@ public abstract class Hero : MonoBehaviour
     {
         Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit);
         transform.SetParent(hit.transform);
-        _animator.Play("Die");
+        _animator.SetTrigger(AnimatorData.PlayerAnimatorParameters.Die);
         Killed?.Invoke(this);
     }
 

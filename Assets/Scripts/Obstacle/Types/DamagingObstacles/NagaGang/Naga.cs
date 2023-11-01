@@ -40,7 +40,7 @@ public class Naga : MonoBehaviour
         }
         else
         {
-            _animator.Play("Attack");
+            _animator.SetTrigger(AnimatorData.ObstacleParameters.Attack);
         }
 
         HealthChanged?.Invoke(_currentHealth);
@@ -50,7 +50,7 @@ public class Naga : MonoBehaviour
     {
         _currentHealth = 0;
         HealthChanged?.Invoke(_currentHealth);
-        _animator.Play("Die");
+        _animator.SetTrigger(AnimatorData.ObstacleParameters.Die);
         this.enabled = false;
     }
 

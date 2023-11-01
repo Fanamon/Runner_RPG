@@ -6,7 +6,7 @@ public class PlayerMover : MonoBehaviour
     [SerializeField] private float _stepSizeByAxisX;
     [SerializeField] private float _minWidth;
     [SerializeField] private float _maxWidth;
-    [SerializeField] private GameObject _heroesGroup;
+    [SerializeField] private Transform _heroesGroup;
 
     private Vector3 _stepDirectionByAxisX;
     private Vector3 _targetPosition;
@@ -21,7 +21,7 @@ public class PlayerMover : MonoBehaviour
 
     private void Start()
     {
-        _targetPosition = _heroesGroup.transform.position;
+        _targetPosition = _heroesGroup.position;
     }
 
     private void OnEnable()
@@ -38,10 +38,10 @@ public class PlayerMover : MonoBehaviour
 
     private void Update()
     {
-        if (_heroesGroup.transform.position.x != _targetPosition.x)
+        if (_heroesGroup.position.x != _targetPosition.x)
         {
-            _targetPosition = new Vector3(_targetPosition.x, _targetPosition.y, _heroesGroup.transform.position.z);
-            _heroesGroup.transform.position = Vector3.MoveTowards(_heroesGroup.transform.position, _targetPosition, 
+            _targetPosition = new Vector3(_targetPosition.x, _targetPosition.y, _heroesGroup.position.z);
+            _heroesGroup.position = Vector3.MoveTowards(_heroesGroup.position, _targetPosition, 
                 _moveSpeed * Time.deltaTime);
         }
     }

@@ -1,10 +1,16 @@
+using System.Collections;
 using UnityEngine;
 
 public class FireballOfHero : CastingShootingObject
 {
     [SerializeField] private float _existanceDuration;
 
-    private float _existanceTimeCount = 0;
+    private Coroutine _existanceDurationCounter;
+
+    private void OnEnable()
+    {
+        _existanceDurationCounter = StartCoroutine(CountExistanceDuration());
+    }
 
     protected override void OnTriggerEnter(Collider other)
     {
@@ -13,7 +19,7 @@ public class FireballOfHero : CastingShootingObject
             damagingObstacle.TakeDamage(Damage);
         }
 
-        _existanceTimeCount = 0;
+        StopCoroutine(_existanceDurationCounter);
         gameObject.SetActive(false);
     }
 
@@ -22,12 +28,12 @@ public class FireballOfHero : CastingShootingObject
     protected override void Update()
     {
         Move(Vector3.forward);
-        _existanceTimeCount += Time.deltaTime;
+    }
 
-        if (_existanceTimeCount >= _existanceDuration)
-        {
-            _existanceTimeCount = 0;
-            gameObject.SetActive(false);
-        }
+    private IEnumerator CountExistanceDuration()
+    {
+        yield return new WaitForSeconds(_existanceDuration);
+
+        gameObject.SetActive(false);
     }
 }

@@ -119,6 +119,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _obstaclePlacementPrefab: {fileID: 186433931576713323, guid: 9bccdcb73eb1876459f1d31014c05f4f, type: 3}
+  _obstaclesPrefab: {fileID: 4326055986112169352, guid: 9478b6a7cebf4b24aba83f008679a7b3, type: 3}
+  _obstacleLinePrefab: {fileID: 1931878412213611508, guid: b08baf16bb75123438143d74aee90b4a, type: 3}
 --- !u!1 &876391697528452381
 GameObject:
   m_ObjectHideFlags: 0

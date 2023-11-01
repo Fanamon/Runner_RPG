@@ -5,6 +5,8 @@ using UnityEngine;
 public class ObstaclePlacements : MonoBehaviour
 {
     [SerializeField] private GameObject _obstaclePlacementPrefab;
+    [SerializeField] private GameObject _obstaclesPrefab;
+    [SerializeField] private GameObject _obstacleLinePrefab;
 
     private float _oneObstacleActiveValue;
     private float _twoObstaclesActiveValue;
@@ -52,29 +54,25 @@ public class ObstaclePlacements : MonoBehaviour
         float[] obstaclePlacementPositionsX, CameraViewObserver cameraViewObserver,
         CastingShootingObjectPool fireballPool, HeroesPool heroesPool, ObstacleChancesChangesObserver obstacleChancesChangesObserver)
     {
-        GameObject obstacles = new GameObject("Obstacles");
-
-        obstacles.transform.SetParent(transform);
+        GameObject obstacles = Instantiate(_obstaclesPrefab, transform);
 
         while (currentObstaclePositionZ < transform.position.z)
         {
-            _obstacles.Add(CreateLineOfObstacles(currentObstaclePositionZ, obstacles, obstaclePlacementPositionsX, 
-                cameraViewObserver, fireballPool, heroesPool, obstacleChancesChangesObserver));
+            _obstacles.Add(CreateLineOfObstacles(currentObstaclePositionZ, obstacles.transform, 
+                obstaclePlacementPositionsX, cameraViewObserver, fireballPool, heroesPool, 
+                obstacleChancesChangesObserver));
 
             currentObstaclePositionZ += stepPositionZ;
         }
     }
 
-    private GameObject[] CreateLineOfObstacles(float currentObstaclePositionZ, GameObject objectObstacles, 
+    private GameObject[] CreateLineOfObstacles(float currentObstaclePositionZ, Transform objectObstacles, 
         float[] obstaclePositionsX, CameraViewObserver cameraViewObserver, CastingShootingObjectPool fireballPool,
         HeroesPool heroesPool, ObstacleChancesChangesObserver obstacleChancesChangesObserver)
     {
-        GameObject obstacleLine = new GameObject("Obstacle Line");
+        GameObject obstacleLine = Instantiate(_obstacleLinePrefab, new Vector3(objectObstacles.position.x,
+            objectObstacles.position.y, currentObstaclePositionZ), objectObstacles.rotation, objectObstacles);
         GameObject[] lineOfObstacles = new GameObject[obstaclePositionsX.Length];
-
-        obstacleLine.transform.SetParent(objectObstacles.transform);
-        obstacleLine.transform.position =
-            new Vector3(obstacleLine.transform.position.x, obstacleLine.transform.position.y, currentObstaclePositionZ);
 
         for (int i = 0; i < lineOfObstacles.Length; i++)
         {

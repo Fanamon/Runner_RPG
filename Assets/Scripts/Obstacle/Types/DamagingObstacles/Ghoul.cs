@@ -38,7 +38,7 @@ public class Ghoul : DamagingObstacle
         }
         else
         {
-            _animator.Play("Attack");
+            _animator.SetTrigger(AnimatorData.ObstacleParameters.Attack);
         }
 
         HealthChanged?.Invoke(_currentHealth);
@@ -47,7 +47,7 @@ public class Ghoul : DamagingObstacle
     protected override void Die()
     {
         _currentHealth = 0;
-        _animator.Play("Die");
+        _animator.SetTrigger(AnimatorData.ObstacleParameters.Die);
         DisableObstacle();
     }
 

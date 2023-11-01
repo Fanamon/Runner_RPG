@@ -18,7 +18,7 @@ public class Witch : DamagingObstacle
     protected override void Awake()
     {
         base.Awake();
-        _spellCastDelay = GetAnimatorClipLength("Idle");
+        _spellCastDelay = GetAnimatorClipLength(nameof(AnimatorData.ObstacleParameters.Idle));
     }
 
     protected override void OnEnable()
@@ -64,7 +64,7 @@ public class Witch : DamagingObstacle
         }
         else
         {
-            _animator.Play("Attack");
+            _animator.SetTrigger(AnimatorData.ObstacleParameters.Attack);
         }
 
         HealthChanged?.Invoke(_currentHealth);
@@ -73,7 +73,7 @@ public class Witch : DamagingObstacle
     protected override void Die()
     {
         _currentHealth = 0;
-        _animator.Play("Die");
+        _animator.SetTrigger(AnimatorData.ObstacleParameters.Die);
         DisableObstacle();
     }
 

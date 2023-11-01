@@ -1080,7 +1080,7 @@ MonoBehaviour:
   _stepSizeByAxisX: 2.5
   _minWidth: -2.5
   _maxWidth: 2.5
-  _heroesGroup: {fileID: 1974366275}
+  _heroesGroup: {fileID: 1974366276}
 --- !u!1 &700780809
 GameObject:
   m_ObjectHideFlags: 0
@@ -3488,7 +3488,7 @@ MonoBehaviour:
   - _obstacleObject: {fileID: 11400000, guid: 5352608adab2edb4aafe0ae64df76a10, type: 2}
     _chance: 0.123
   - _obstacleObject: {fileID: 11400000, guid: 2b78f8d1a78320a4da8e81aef85aed9b, type: 2}
-    _chance: 1
+    _chance: 0.020805014
   - _obstacleObject: {fileID: 11400000, guid: f699303a52b36c944b3d33d699907a9d, type: 2}
     _chance: 0.014
   - _obstacleObject: {fileID: 11400000, guid: befddba6d0349e246a3b1931ff82c41d, type: 2}
